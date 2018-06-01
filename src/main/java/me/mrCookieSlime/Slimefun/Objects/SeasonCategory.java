@@ -18,7 +18,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class SeasonCategory extends Category {
 
-	private int month = -1;
+	private int month;
 
 	/**
 	 * The constructor for a SeasonCategory.

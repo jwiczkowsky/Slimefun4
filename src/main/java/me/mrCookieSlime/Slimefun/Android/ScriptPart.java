@@ -58,7 +58,7 @@ public enum ScriptPart {
 	private ItemStack item;
 	private AndroidType type;
 	
-	private ScriptPart(AndroidType type, String name, String texture) {
+	ScriptPart(AndroidType type, String name, String texture) {
 		try {
 			this.type = type;
 			this.item = new CustomItem(CustomSkull.getItem(texture), name);

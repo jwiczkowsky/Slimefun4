@@ -19,15 +19,15 @@ import org.bukkit.inventory.ItemStack;
 
 public class RitualAnimation implements Runnable {
 
-	List<Block> altars;
-	
-	Block altar;
-	Location l;
-	ItemStack output;
-	List<Block> pedestals;
-	List<ItemStack> items;
-	
-	List<Location> particles;
+	private List<Block> altars;
+
+	private Block altar;
+	private Location l;
+	private ItemStack output;
+	private List<Block> pedestals;
+	private List<ItemStack> items;
+
+	private List<Location> particles;
 	
 	boolean running;
 	int stage;
@@ -39,7 +39,7 @@ public class RitualAnimation implements Runnable {
 		this.output = output;
 		this.pedestals = pedestals;
 		this.items = items;
-		this.particles = new ArrayList<Location>();
+		this.particles = new ArrayList<>();
 		
 		this.running = true;
 		this.stage = 0;
@@ -48,14 +48,18 @@ public class RitualAnimation implements Runnable {
 	@Override
 	public void run() {
 		idle();
+
 		if(this.stage == 36) {
 			finish();
 			return;
 		}
+
 		if(this.stage > 0 && this.stage % 4 == 0) {
 			checkPedestal(pedestals.get(this.stage / 4 - 1));
 		}
+
 		this.stage += 1;
+
 		SlimefunStartup.instance.getServer().getScheduler().scheduleSyncDelayedTask(SlimefunStartup.instance, this, 8);
 	}
 	
@@ -106,9 +110,7 @@ public class RitualAnimation implements Runnable {
 		l.getWorld().playEffect(l, Effect.STEP_SOUND, Material.EMERALD_BLOCK);
 		l.getWorld().dropItemNaturally(l.add(0, 1, 0), output);
 
-		pedestals.forEach((pblock)->{
-			Variables.altarinuse.remove(pblock.getLocation());
-		});
+		pedestals.forEach((pblock) -> Variables.altarinuse.remove(pblock.getLocation()));
 		Variables.altarinuse.remove(altar.getLocation());  // should re-enable altar blocks on craft completion.
 		
 		altars.remove(altar);

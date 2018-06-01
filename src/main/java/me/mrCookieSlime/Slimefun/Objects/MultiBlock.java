@@ -12,8 +12,8 @@ public class MultiBlock {
 	
 	public static List<MultiBlock> list = new ArrayList<MultiBlock>();
 	
-	Material[] blocks;
-	Material trigger;
+	private Material[] blocks;
+	private Material trigger;
 	
 	public MultiBlock(Material[] build, Material trigger) {
 		this.blocks = build;
@@ -39,7 +39,7 @@ public class MultiBlock {
 	public boolean isMultiBlock(SlimefunItem machine) {
 		if (machine == null) return false;
 		else if (!(machine instanceof SlimefunMachine)) return false;
-		else if (machine instanceof SlimefunMachine) {
+		else {
 			MultiBlock mb = ((SlimefunMachine) machine).toMultiBlock();
 			if (trigger == mb.getTriggerBlock()) {
 				for (int i = 0; i < mb.getBuild().length; i++) {
@@ -54,7 +54,6 @@ public class MultiBlock {
 			}
 			else return false;
 		}
-		else return false;
 	}
 	
 	public boolean isMultiBlock(MultiBlock mb) {

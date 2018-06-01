@@ -23,7 +23,7 @@ public class SlimefunManager {
 	
 	public static SlimefunStartup plugin;
 	public static String PREFIX;
-	public static Map<EntityType, List<ItemStack>> drops = new HashMap<EntityType, List<ItemStack>>();
+	public static Map<EntityType, List<ItemStack>> drops = new HashMap<>();
 	
 	public static void registerArmorSet(ItemStack baseComponent, ItemStack[] items, String idSyntax, PotionEffect[][] effects, boolean special, boolean slimefun) {
 		String[] components = new String[] {"_HELMET", "_CHESTPLATE", "_LEGGINGS", "_BOOTS"};

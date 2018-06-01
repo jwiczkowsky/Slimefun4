@@ -91,201 +91,203 @@ public class SlimefunStartup extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		CSCoreLibLoader loader = new CSCoreLibLoader(this);
-		if (loader.load()) {
 
-			if (!isVersionCompatible()) {
-				getLogger().severe("### Slimefun failed to load!");
-				getLogger().severe("###");
-				getLogger().severe("### You are using the wrong Version of Minecraft!!!");
-				getLogger().severe("###");
-				getLogger().severe("### You are using Minecraft " + ReflectionUtils.getVersion());
-				getLogger().severe("### but Slimefun v" + getDescription().getVersion() + " requires you to be using");
-				getLogger().severe("### Minecraft " + StringUtils.join(supportedHumanReadable, ", "));
-				getLogger().severe("###");
-				getLogger().severe("### Please use an older Version of Slimefun and disable auto-updating");
-				getLogger().severe("### or consider updating your Server Software.");
-
-				getServer().getPluginManager().disablePlugin(this);
-
-				return;
-			}
-
-			instance = this;
-			getLogger().info("[Slimefun] Loading Files...");
-			Files.cleanup();
-
-			getLogger().info("[Slimefun] Loading Config...");
-
-			utils = new PluginUtils(this);
-			utils.setupConfig();
-
-			// Loading all extra configs
-			researches = new Config(Files.RESEARCHES);
-			items = new Config(Files.ITEMS);
-			whitelist = new Config(Files.WHITELIST);
-
-			// Init Config, Updater, Metrics and messages.yml
-			utils.setupUpdater(53485, getFile());
-			utils.setupMetrics();
-			utils.setupLocalization();
-			config = utils.getConfig();
-			Messages.local = utils.getLocalization();
-			Messages.setup();
-
-			// Creating all necessary Folders
-			createDirs(
-					new File("data-storage/Slimefun/blocks"),
-					new File("data-storage/Slimefun/stored-blocks"),
-					new File("data-storage/Slimefun/stored-inventories"),
-					new File("data-storage/Slimefun/stored-chunks"),
-					new File("data-storage/Slimefun/universal-inventories"),
-					new File("data-storage/Slimefun/waypoints"),
-					new File("data-storage/Slimefun/block-backups"),
-					new File("plugins/Slimefun/scripts"),
-					new File("plugins/Slimefun/generators"),
-					new File("plugins/Slimefun/error-reports"),
-					new File("plugins/Slimefun/cache/github")
-			);
-
-			SlimefunManager.plugin = this;
-
-			getLogger().info("[Slimefun] Loading Items...");
-
-			MiscSetup.setupItemSettings();
-
-			try {
-				SlimefunSetup.setupItems();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-
-			MiscSetup.loadDescriptions();
-
-			getLogger().info("[Slimefun] Loading Researches...");
-			Research.enabled = getResearchCfg().getBoolean("enable-researching");
-			ResearchSetup.setupResearches();
-
-			MiscSetup.setupMisc();
-
-			BlockStorage.info_delay = config.getInt("URID.info-delay");
-
-			getLogger().info("[Slimefun] Loading World Generators...");
-
-			// Generating Oil as an OreGenResource (its a cool API)
-			OreGenSystem.registerResource(new OilResource());
-			OreGenSystem.registerResource(new NetherIceResource());
-
-			// Setting up GitHub Connectors...
-
-			GitHubSetup.setup();
-
-			// All Slimefun Listeners
-			new ArmorListener(this);
-			new ItemListener(this);
-			new BlockListener(this);
-			new GearListener(this);
-			new AutonomousToolsListener(this);
-			new DamageListener(this);
-			new BowListener(this);
-			new ToolListener(this);
-			new FurnaceListener(this);
-			new TeleporterListener(this);
-			new AndroidKillingListener(this);
-			new NetworkListener(this);
-			new WorldLoadUnloadListener(this);
-			new PlayerQuitListener(this);
-
-			if (ReflectionUtils.getVersion().startsWith("v1_12_")) {
-				new ItemPickupListener_1_12(this);
-			} else {
-				new ItemPickupListener(this);
-			}
-
-			// Toggleable Listeners for performance
-			if (config.getBoolean("items.talismans")) new TalismanListener(this);
-			if (config.getBoolean("items.backpacks")) new BackpackListener(this);
-			if (config.getBoolean("items.coolers")) new CoolerListener(this);
-
-			// Handle Slimefun Guide being given on Join
-			if (config.getBoolean("options.give-guide-on-first-join")) {
-				new PlayerJoinListener(this);
-			}
-
-			// Initiating various Stuff and all Items with a slightly delay (0ms after the Server finished loading)
-			getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-				Slimefun.emeraldenchants = getServer().getPluginManager().isPluginEnabled("EmeraldEnchants");
-				SlimefunGuide.all_recipes = config.getBoolean("options.show-vanilla-recipes-in-guide");
-				MiscSetup.loadItems();
-
-				for (World world : Bukkit.getWorlds()) {
-					new BlockStorage(world);
-				}
-
-				if (SlimefunItem.getByID("ANCIENT_ALTAR") != null)
-					new AncientAltarListener((SlimefunStartup) instance);
-			}, 0);
-
-			// WorldEdit Hook to clear Slimefun Data upon //set 0 //cut or any other equivalent
-			if (getServer().getPluginManager().isPluginEnabled("WorldEdit")) {
-				try {
-					Class.forName("com.sk89q.worldedit.extent.Extent");
-					new WESlimefunManager();
-					getLogger().info("[Slimefun] Successfully hooked into WorldEdit!");
-				} catch (Exception x) {
-					getLogger().severe("[Slimefun] Failed to hook into WorldEdit!");
-					getLogger().severe("[Slimefun] Maybe consider updating WorldEdit or Slimefun?");
-				}
-			}
-
-			getCommand("slimefun").setExecutor(new SlimefunCommand(this));
-			getCommand("slimefun").setTabCompleter(new SlimefunTabCompleter());
-
-			// Armor Update Task
-			if (config.getBoolean("options.enable-armor-effects")) {
-				new ArmorUpdateTask(this);
-			}
-
-			ticker = new TickerTask();
-
-			// Starting all ASYNC Tasks
-			getServer().getScheduler().scheduleAsyncRepeatingTask(this, new AutoSavingTask(), 1200L, config.getInt("options.auto-save-delay-in-minutes") * 60L * 20L);
-			getServer().getScheduler().scheduleAsyncRepeatingTask(this, ticker, 100L, config.getInt("URID.custom-ticker-delay"));
-
-			getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
-				for (GitHubConnector connector : GitHubConnector.connectors) {
-					connector.pullFile();
-				}
-			}, 80L, 60 * 60 * 20L);
-
-			// Hooray!
-			getLogger().info("[Slimefun] Finished!");
-
-			clearlag = getServer().getPluginManager().isPluginEnabled("ClearLag");
-
-			coreProtect = getServer().getPluginManager().isPluginEnabled("CoreProtect");
-
-			Bukkit.getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
-				@Override
-				public void run() {
-					exoticGarden = getServer().getPluginManager().isPluginEnabled("ExoticGarden"); //Had to do it this way, otherwise it seems disabled.
-				}
-			}, 0);
-
-			if (clearlag) new ClearLaggIntegration(this);
-
-			if (coreProtect)
-				coreProtectAPI = ((CoreProtect) getServer().getPluginManager().getPlugin("CoreProtect")).getAPI();
-
-			Research.creative_research = config.getBoolean("options.allow-free-creative-research");
-
-			AutoEnchanter.max_emerald_enchantments = config.getInt("options.emerald-enchantment-limit");
-
-			SlimefunSetup.legacy_ore_washer = config.getBoolean("options.legacy-ore-washer");
-			ElectricDustWasher.legacy_dust_washer = config.getBoolean("options.legacy-dust-washer");
-
-			// Do not show /sf elevator command in our Log, it could get quite spammy
-			CSCoreLib.getLib().filterLog("([A-Za-z0-9_]{3,16}) issued server command: /sf elevator (.{0,})");
+		if (!loader.load()) {
+			return;
 		}
+
+		if (!isVersionCompatible()) {
+			getLogger().severe("### Slimefun failed to load!");
+			getLogger().severe("###");
+			getLogger().severe("### You are using the wrong Version of Minecraft!!!");
+			getLogger().severe("###");
+			getLogger().severe("### You are using Minecraft " + ReflectionUtils.getVersion());
+			getLogger().severe("### but Slimefun v" + getDescription().getVersion() + " requires you to be using");
+			getLogger().severe("### Minecraft " + StringUtils.join(supportedHumanReadable, ", "));
+			getLogger().severe("###");
+			getLogger().severe("### Please use an older Version of Slimefun and disable auto-updating");
+			getLogger().severe("### or consider updating your Server Software.");
+
+			getServer().getPluginManager().disablePlugin(this);
+
+			return;
+		}
+
+		instance = this;
+		getLogger().info("[Slimefun] Loading Files...");
+		Files.cleanup();
+
+		getLogger().info("[Slimefun] Loading Config...");
+
+		utils = new PluginUtils(this);
+		utils.setupConfig();
+
+		// Loading all extra configs
+		researches = new Config(Files.RESEARCHES);
+		items = new Config(Files.ITEMS);
+		whitelist = new Config(Files.WHITELIST);
+
+		// Init Config, Updater, Metrics and messages.yml
+		utils.setupUpdater(53485, getFile());
+		utils.setupMetrics();
+		utils.setupLocalization();
+		config = utils.getConfig();
+		Messages.local = utils.getLocalization();
+		Messages.setup();
+
+		// Creating all necessary Folders
+		createDirs(
+				new File("data-storage/Slimefun/blocks"),
+				new File("data-storage/Slimefun/stored-blocks"),
+				new File("data-storage/Slimefun/stored-inventories"),
+				new File("data-storage/Slimefun/stored-chunks"),
+				new File("data-storage/Slimefun/universal-inventories"),
+				new File("data-storage/Slimefun/waypoints"),
+				new File("data-storage/Slimefun/block-backups"),
+				new File("plugins/Slimefun/scripts"),
+				new File("plugins/Slimefun/generators"),
+				new File("plugins/Slimefun/error-reports"),
+				new File("plugins/Slimefun/cache/github")
+		);
+
+		SlimefunManager.plugin = this;
+
+		getLogger().info("[Slimefun] Loading Items...");
+
+		MiscSetup.setupItemSettings();
+
+		try {
+			SlimefunSetup.setupItems();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		MiscSetup.loadDescriptions();
+
+		getLogger().info("[Slimefun] Loading Researches...");
+		Research.enabled = getResearchCfg().getBoolean("enable-researching");
+		ResearchSetup.setupResearches();
+
+		MiscSetup.setupMisc();
+
+		BlockStorage.info_delay = config.getInt("URID.info-delay");
+
+		getLogger().info("[Slimefun] Loading World Generators...");
+
+		// Generating Oil as an OreGenResource (its a cool API)
+		OreGenSystem.registerResource(new OilResource());
+		OreGenSystem.registerResource(new NetherIceResource());
+
+		// Setting up GitHub Connectors...
+
+		GitHubSetup.setup();
+
+		// All Slimefun Listeners
+		new ArmorListener(this);
+		new ItemListener(this);
+		new BlockListener(this);
+		new GearListener(this);
+		new AutonomousToolsListener(this);
+		new DamageListener(this);
+		new BowListener(this);
+		new ToolListener(this);
+		new FurnaceListener(this);
+		new TeleporterListener(this);
+		new AndroidKillingListener(this);
+		new NetworkListener(this);
+		new WorldLoadUnloadListener(this);
+		new PlayerQuitListener(this);
+
+		if (ReflectionUtils.getVersion().startsWith("v1_12_")) {
+			new ItemPickupListener_1_12(this);
+		} else {
+			new ItemPickupListener(this);
+		}
+
+		// Toggleable Listeners for performance
+		if (config.getBoolean("items.talismans")) new TalismanListener(this);
+		if (config.getBoolean("items.backpacks")) new BackpackListener(this);
+		if (config.getBoolean("items.coolers")) new CoolerListener(this);
+
+		// Handle Slimefun Guide being given on Join
+		if (config.getBoolean("options.give-guide-on-first-join")) {
+			new PlayerJoinListener(this);
+		}
+
+		// Initiating various Stuff and all Items with a slightly delay (0ms after the Server finished loading)
+		getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
+			Slimefun.emeraldenchants = getServer().getPluginManager().isPluginEnabled("EmeraldEnchants");
+			SlimefunGuide.all_recipes = config.getBoolean("options.show-vanilla-recipes-in-guide");
+			MiscSetup.loadItems();
+
+			for (World world : Bukkit.getWorlds()) {
+				new BlockStorage(world);
+			}
+
+			if (SlimefunItem.getByID("ANCIENT_ALTAR") != null)
+				new AncientAltarListener((SlimefunStartup) instance);
+		}, 0);
+
+		// WorldEdit Hook to clear Slimefun Data upon //set 0 //cut or any other equivalent
+		if (getServer().getPluginManager().isPluginEnabled("WorldEdit")) {
+			try {
+				Class.forName("com.sk89q.worldedit.extent.Extent");
+				new WESlimefunManager();
+				getLogger().info("[Slimefun] Successfully hooked into WorldEdit!");
+			} catch (Exception x) {
+				getLogger().severe("[Slimefun] Failed to hook into WorldEdit!");
+				getLogger().severe("[Slimefun] Maybe consider updating WorldEdit or Slimefun?");
+			}
+		}
+
+		getCommand("slimefun").setExecutor(new SlimefunCommand(this));
+		getCommand("slimefun").setTabCompleter(new SlimefunTabCompleter());
+
+		// Armor Update Task
+		if (config.getBoolean("options.enable-armor-effects")) {
+			new ArmorUpdateTask(this);
+		}
+
+		ticker = new TickerTask();
+
+		// Starting all ASYNC Tasks
+		getServer().getScheduler().scheduleAsyncRepeatingTask(this, new AutoSavingTask(), 1200L, config.getInt("options.auto-save-delay-in-minutes") * 60L * 20L);
+		getServer().getScheduler().scheduleAsyncRepeatingTask(this, ticker, 100L, config.getInt("URID.custom-ticker-delay"));
+
+		getServer().getScheduler().scheduleAsyncRepeatingTask(this, () -> {
+			for (GitHubConnector connector : GitHubConnector.connectors) {
+				connector.pullFile();
+			}
+		}, 80L, 60 * 60 * 20L);
+
+		// Hooray!
+		getLogger().info("[Slimefun] Finished!");
+
+		clearlag = getServer().getPluginManager().isPluginEnabled("ClearLag");
+
+		coreProtect = getServer().getPluginManager().isPluginEnabled("CoreProtect");
+
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
+			@Override
+			public void run() {
+				exoticGarden = getServer().getPluginManager().isPluginEnabled("ExoticGarden"); //Had to do it this way, otherwise it seems disabled.
+			}
+		}, 0);
+
+		if (clearlag) new ClearLaggIntegration(this);
+
+		if (coreProtect)
+			coreProtectAPI = ((CoreProtect) getServer().getPluginManager().getPlugin("CoreProtect")).getAPI();
+
+		Research.creative_research = config.getBoolean("options.allow-free-creative-research");
+
+		AutoEnchanter.max_emerald_enchantments = config.getInt("options.emerald-enchantment-limit");
+
+		SlimefunSetup.legacy_ore_washer = config.getBoolean("options.legacy-ore-washer");
+		ElectricDustWasher.legacy_dust_washer = config.getBoolean("options.legacy-dust-washer");
+
+		// Do not show /sf elevator command in our Log, it could get quite spammy
+		CSCoreLib.getLib().filterLog("([A-Za-z0-9_]{3,16}) issued server command: /sf elevator (.{0,})");
 	}
 
 	@Override

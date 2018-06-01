@@ -10,10 +10,10 @@ import org.bukkit.event.HandlerList;
 public class ResearchUnlockEvent extends Event implements Cancellable {
 	
 	private static final HandlerList handlers = new HandlerList();
-	
-	Player p;
-	Research r;
-	boolean cancelled;
+
+	private Player p;
+	private Research r;
+	private boolean cancelled;
 	
 	public HandlerList getHandlers() {
 	    return handlers;

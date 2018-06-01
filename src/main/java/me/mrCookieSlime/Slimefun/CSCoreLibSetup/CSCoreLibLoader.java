@@ -18,10 +18,10 @@ import org.json.simple.JSONValue;
 
 public class CSCoreLibLoader {
 	
-	Plugin plugin;
-	URL url;
-	URL download;
-	File file;
+	private final Plugin plugin;
+	private URL url;
+	private URL download;
+	private File file;
 	
 	public CSCoreLibLoader(Plugin plugin) {
 		this.plugin = plugin;
@@ -34,25 +34,21 @@ public class CSCoreLibLoader {
 	public boolean load() {
 		if (plugin.getServer().getPluginManager().isPluginEnabled("CS-CoreLib")) return true;
 		else {
-			System.err.println(" ");
-			System.err.println("#################### - INFO - ####################");
-			System.err.println(" ");
-			System.err.println(plugin.getName() + " could not be loaded.");
-			System.err.println("It appears that you have not installed CS-CoreLib");
-			System.err.println("Your Server will now try to download and install");
-			System.err.println("CS-CoreLib for you.");
-			System.err.println("You will be asked to restart your Server when it's finished.");
-			System.err.println("If this somehow fails, please download and install CS-CoreLib manually:");
-			System.err.println("https://dev.bukkit.org/projects/cs-corelib");
-			System.err.println(" ");
-			System.err.println("#################### - INFO - ####################");
-			System.err.println(" ");
-			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-				
-				@Override
-				public void run() {
-					if (connect()) install();
-				}
+			this.plugin.getLogger().severe(" ");
+			this.plugin.getLogger().severe("#################### - INFO - ####################");
+			this.plugin.getLogger().severe(" ");
+			this.plugin.getLogger().severe(plugin.getName() + " could not be loaded.");
+			this.plugin.getLogger().severe("It appears that you have not installed CS-CoreLib");
+			this.plugin.getLogger().severe("Your Server will now try to download and install");
+			this.plugin.getLogger().severe("CS-CoreLib for you.");
+			this.plugin.getLogger().severe("You will be asked to restart your Server when it's finished.");
+			this.plugin.getLogger().severe("If this somehow fails, please download and install CS-CoreLib manually:");
+			this.plugin.getLogger().severe("https://dev.bukkit.org/projects/cs-corelib");
+			this.plugin.getLogger().severe(" ");
+			this.plugin.getLogger().severe("#################### - INFO - ####################");
+			this.plugin.getLogger().severe(" ");
+			plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+				if (connect()) install();
 			}, 10L);
 			return false;
 		}
@@ -72,15 +68,15 @@ public class CSCoreLibLoader {
             
             return true;
         } catch (IOException e) {
-        	System.err.println(" ");
-        	System.err.println("#################### - WARNING - ####################");
-			System.err.println(" ");
-			System.err.println("Could not connect to BukkitDev.");
-			System.err.println("Please download & install CS-CoreLib manually:");
-			System.err.println("https://dev.bukkit.org/projects/cs-corelib");
-			System.err.println(" ");
-			System.err.println("#################### - WARNING - ####################");
-			System.err.println(" ");
+			this.plugin.getLogger().severe(" ");
+			this.plugin.getLogger().severe("#################### - WARNING - ####################");
+			this.plugin.getLogger().severe(" ");
+			this.plugin.getLogger().severe("Could not connect to BukkitDev.");
+			this.plugin.getLogger().severe("Please download & install CS-CoreLib manually:");
+			this.plugin.getLogger().severe("https://dev.bukkit.org/projects/cs-corelib");
+			this.plugin.getLogger().severe(" ");
+			this.plugin.getLogger().severe("#################### - WARNING - ####################");
+			this.plugin.getLogger().severe(" ");
             return false;
         }
     }

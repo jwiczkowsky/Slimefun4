@@ -73,16 +73,16 @@ public abstract class GitHubConnector {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(this.getFile()));
 			
-			String full = "";
+			StringBuilder full = new StringBuilder();
 			
 			String line;
 		    while ((line = reader.readLine()) != null) {
-		        full = full + line;
+		        full.append(line);
 		    }
 		    
 		    reader.close();
 		    
-		    JsonElement element = new JsonParser().parse(full);
+		    JsonElement element = new JsonParser().parse(full.toString());
 		    
 		    this.onSuccess(element);
 		} 

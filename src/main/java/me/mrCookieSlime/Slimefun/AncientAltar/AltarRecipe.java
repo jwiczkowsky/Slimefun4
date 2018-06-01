@@ -7,16 +7,19 @@ import org.bukkit.inventory.ItemStack;
 
 public class AltarRecipe {
 	
-	ItemStack catalyst;
-	List<ItemStack> input;
-	ItemStack output;
+	private ItemStack catalyst;
+	private ItemStack output;
+
+	private List<ItemStack> input;
 	
 	public AltarRecipe(List<ItemStack> input, ItemStack output) {
 		this.catalyst = input.get(4);
-		this.input = new ArrayList<ItemStack>();
+		this.input = new ArrayList<>();
+
 		for (int i = 0; i < input.size(); i++) {
 			if (i != 4) this.input.add(input.get(i));
 		}
+
 		this.output = output;
 		
 		Pedestals.recipes.add(this);
@@ -33,5 +36,4 @@ public class AltarRecipe {
 	public List<ItemStack> getInput() {
 		return this.input;
 	}
-
 }

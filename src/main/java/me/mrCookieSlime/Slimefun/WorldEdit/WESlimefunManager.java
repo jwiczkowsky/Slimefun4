@@ -27,14 +27,18 @@ public class WESlimefunManager {
 			protected void onBlockChange(Vector pos, BaseBlock b) {
 				super.onBlockChange(pos, b);
 				
-				if (b.getType() == 0) {
-					World world = Bukkit.getWorld(event.getWorld().getName());
-					
-					if (world != null) {
-						Location l = new Location(world, pos.getBlockX(), pos.getBlockY(), pos.getBlockZ());
-						if (BlockStorage.hasBlockInfo(l)) BlockStorage.clearBlockInfo(l);
-					}
+				if (!(b.getType() == 0)) {
+					return;
 				}
+
+				World world = Bukkit.getWorld(event.getWorld().getName());
+
+				if (world == null) {
+					return;
+				}
+
+				Location l = new Location(world, pos.getBlockX(), pos.getBlockY(), pos.getBlockZ());
+				if (BlockStorage.hasBlockInfo(l)) BlockStorage.clearBlockInfo(l);
 			}
 			
 		});

@@ -63,7 +63,7 @@ public class Pedestals {
 	}
 
 	private static ItemStack checkRecipe(ItemStack catalyst, List<ItemStack> input) {
-        AltarRecipe r = null;
+        AltarRecipe r;
 		for (AltarRecipe recipe : recipes) {
 			if (SlimefunManager.isItemSimiliar(catalyst, recipe.getCatalyst(), true)) {
 				r = recipe;

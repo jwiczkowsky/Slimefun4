@@ -29,10 +29,10 @@ import me.mrCookieSlime.Slimefun.api.SlimefunRecipes;
 
 public class MiscSetup {
 	
-	public static List<PostSlimefunLoadingHandler> post_handlers = new ArrayList<PostSlimefunLoadingHandler>();
+	public static List<PostSlimefunLoadingHandler> post_handlers = new ArrayList<>();
 	
 	public static void setupMisc() {
-		if (SlimefunItem.getByID("COMMON_TALISMAN") != null && (Boolean) Slimefun.getItemValue("COMMON_TALISMAN", "recipe-requires-nether-stars")) {
+		if (SlimefunItem.getByID("COMMON_TALISMAN") != null && (boolean) Slimefun.getItemValue("COMMON_TALISMAN", "recipe-requires-nether-stars")) {
 			SlimefunItem.getByID("COMMON_TALISMAN").setRecipe(new ItemStack[] {SlimefunItems.MAGIC_LUMP_2, SlimefunItems.GOLD_8K, SlimefunItems.MAGIC_LUMP_2, null, new ItemStack(Material.NETHER_STAR), null, SlimefunItems.MAGIC_LUMP_2, SlimefunItems.GOLD_8K, SlimefunItems.MAGIC_LUMP_2});
 		}
 		SlimefunItem.setRadioactive(SlimefunItems.URANIUM);
@@ -59,50 +59,24 @@ public class MiscSetup {
 			}
 		}
 		
-		List<SlimefunItem> pre = new ArrayList<SlimefunItem>();
-		List<SlimefunItem> init = new ArrayList<SlimefunItem>();
-		List<SlimefunItem> post = new ArrayList<SlimefunItem>();
+		List<SlimefunItem> pre = new ArrayList<>();
+		List<SlimefunItem> init = new ArrayList<>();
+		List<SlimefunItem> post = new ArrayList<>();
 		
 		for (SlimefunItem item: SlimefunItem.list()) {
 			if (item instanceof Alloy || item instanceof ReplacingAlloy) pre.add(item);
 			else if (item instanceof SlimefunMachine) init.add(item);
 			else post.add(item);
 		}
-		
-		for (SlimefunItem item: pre) {
-			item.load();
-		}
-		for (SlimefunItem item: init) {
-			item.load();
-		}
-		for (SlimefunItem item: post) {
-			item.load();
-		}
+
+		pre.forEach(SlimefunItem::load);
+		init.forEach(SlimefunItem::load);
+		post.forEach(SlimefunItem::load);
 
 		AutomatedCraftingChamber crafter = (AutomatedCraftingChamber) SlimefunItem.getByID("AUTOMATED_CRAFTING_CHAMBER");
 		
 		if (crafter != null) {
-//			Iterator<Recipe> recipes = Bukkit.recipeIterator();
-//			
-//			while (recipes.hasNext()) {
-//				Recipe r = recipes.next();
-//				boolean allow = true;
-//				if (Bukkit.getPluginManager().isPluginEnabled("SensibleToolbox")) {
-//					BaseSTBItem item = SensibleToolbox.getItemRegistry().fromItemStack(r.getResult());
-//					allow = item == null;
-//				}
-//				
-//				if (allow) {
-//					if (r instanceof ShapedRecipe) {
-//						
-//					}
-//					else if (r instanceof ShapelessRecipe) {
-//						
-//					}
-//				}
-//			}
-			
-			for (ItemStack[] inputs: RecipeType.getRecipeInputList((SlimefunMachine) SlimefunItem.getByID("ENHANCED_CRAFTING_TABLE"))) {
+			for (ItemStack[] inputs: RecipeType.getRecipeInputList(SlimefunItem.getByID("ENHANCED_CRAFTING_TABLE"))) {
 				StringBuilder builder = new StringBuilder();
 				int i = 0;
 				for (ItemStack item: inputs) {

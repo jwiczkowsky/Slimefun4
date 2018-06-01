@@ -4,6 +4,6 @@ public enum BookDesign {
 	
 	BOOK,
 	CHEST,
-	CHEAT_SHEET;
+	CHEAT_SHEET
 
 }

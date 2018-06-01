@@ -84,7 +84,7 @@ public class Research {
 		this.id = id;
 		this.name = name;
 		this.cost = cost;
-		this.items = new ArrayList<SlimefunItem>();
+		this.items = new ArrayList<>();
 	}
 
 	/**

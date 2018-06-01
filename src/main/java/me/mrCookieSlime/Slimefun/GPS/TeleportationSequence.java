@@ -19,7 +19,7 @@ import org.bukkit.potion.PotionEffectType;
 
 public class TeleportationSequence {
 
-	public static Set<UUID> players = new HashSet<UUID>();
+	public static Set<UUID> players = new HashSet<>();
 	
 	public static void start(UUID uuid, int complexity, Location source, Location destination, boolean resistance) {
 		players.add(uuid);
@@ -45,8 +45,7 @@ public class TeleportationSequence {
 	
 	private static boolean isValid(Player p, Location source) {
 		if (p == null) return false;
-		if (p.getLocation().distance(source) > 1.4) return false;
-		return true;
+		return !(p.getLocation().distance(source) > 1.4);
 	}
 	
 	private static void cancel(UUID uuid, Player p) {
@@ -96,13 +95,7 @@ public class TeleportationSequence {
 					ParticleEffect.PORTAL.display(source, 0.2F, 0.8F, 0.2F, 1, progress * 2);
 					source.getWorld().playSound(source, Sound.UI_BUTTON_CLICK, 1.7F, 0.6F);
 					
-					Bukkit.getScheduler().scheduleSyncDelayedTask(SlimefunStartup.instance, new Runnable() {
-						
-						@Override
-						public void run() {
-							updateProgress(uuid, speed, progress + speed, source, destination, resistance);
-						}
-					}, 10l);
+					Bukkit.getScheduler().scheduleSyncDelayedTask(SlimefunStartup.instance, () -> updateProgress(uuid, speed, progress + speed, source, destination, resistance), 10L);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
